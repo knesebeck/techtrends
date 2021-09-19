@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "techtrends.fullname" . }}
+  name: {{ .Chart.Name }}
   labels:
-{{ include "techtrends.labels" . | indent 4 }}
+    app: {{ .Chart.Name }}
+  namespace: {{ .Values.namespace }}
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: {{ .Values.service.targetPort }}
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ include "techtrends.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: {{ .Chart.Name }}
