@@ -1,6 +1,7 @@
 apiVersion: v1
 appVersion: "1.0"
-description: A Helm chart for Kubernetes
-keywords: techtrends
+description: Udacity Techtrends App
+keywords:
+  - techtrends
 name: techtrends
 version: 1.0.0
