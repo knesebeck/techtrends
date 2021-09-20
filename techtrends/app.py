@@ -1,7 +1,8 @@
 import sqlite3
 
-from flask import Flask, jsonify, json, render_template, request, url_for, redirect, flash
-from werkzeug.exceptions import abort
+from flask import Flask, json, render_template, request, url_for, redirect, flash
+from logging import basicConfig, DEBUG, StreamHandler
+from sys import stderr, stdout
 
 db_connection_count = 0
 
@@ -22,6 +23,7 @@ def get_post(post_id):
         (post_id,)
     ).fetchone()
     connection.close()
+    app.logger.info("Article has been requested.")
     return post
 
 # Define the Flask application
@@ -42,13 +44,16 @@ def index():
 def post(post_id):
     post = get_post(post_id)
     if post is None:
-      return render_template('404.html'), 404
+        app.logger.error("Article {} could not be found".format(post_id))
+        return render_template('404.html'), 404
     else:
-      return render_template('post.html', post=post)
+        app.logger.info("Article {} has been accessed".format(post_id))
+        return render_template('post.html', post=post)
 
 # Define the About Us page
 @app.route('/about')
 def about():
+    app.logger.info("About page has been requested")
     return render_template('about.html')
 
 # Define the post creation functionality 
@@ -57,7 +62,6 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
-
         if not title:
             flash('Title is required!')
         else:
@@ -68,8 +72,8 @@ def create():
             )
             connection.commit()
             connection.close()
+            app.logger.info("A new article has been created.")
             return redirect(url_for('index'))
-
     return render_template('create.html')
 
 # Health Check
@@ -101,5 +105,10 @@ def metrics():
     return response
 
 # start the application on port 3111
-if __name__ == "__main__":
-   app.run(host='0.0.0.0', port='3111')
+if __name__ == "__main__":  
+    basicConfig(
+        format='%(levelname)s: %(name)-2s - [%(asctime)s] - %(message)s',
+        handlers=[StreamHandler(stdout), StreamHandler(stderr)],
+        level=DEBUG,
+    )
+    app.run(host='0.0.0.0', port='3111')
